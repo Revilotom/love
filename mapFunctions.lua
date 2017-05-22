@@ -1,19 +1,75 @@
-tileW = 0
+tilecollider = require "tilecollider"
+
 tileH = 0
+tileW = 0
+
+
 
 local tileTable, tileset, quads, tileSetw, tileSeth, tilesetBatch, mapW, mapH
 local mapX = 0
-local  mapY = 0
+local mapY = 0
+local handler = nil
+local playerX
+local playerY
+
+
+function isResolvable(side, tile, x, y)
+
+
+
+    print("checking for collision at", x, y, tile)
+
+
+    if tile == '#' then
+        if side == "right" then
+                return true
+        end
+        if side == "left" then
+            if playerX - x < 2 then
+                return true
+            end
+        end
+    end
+end
+
+function getTile(x, y)
+
+    if x > mapW or y > mapH or y <=0 or x <= 0 then
+        print ("out of bounds", x, y)
+    else
+        return tileTable[x][y]
+    end
+end
 
 function loadMap(path)
     love.filesystem.load(path)()
 end
 
 function moveMap(dx, dy)
-    oldMapX = mapX
-    oldMapY = mapY
-    mapX = mapX + -dx
+
+
+    print("player at", playerX, playerY)
+    playerX = math.ceil(midX/tileW + mapX)
+    playerY = math.ceil(midY/tileW +  mapY)
+    newx = handler:rightResolve(playerX*tileW, playerY*tileH, 70, 105)
+
+    if newx ~= playerX then
+
+        newx = handler:leftResolve(playerX*tileW, playerY*tileH, 70, 105)
+
+        if newx ~= playerX then
+
+
+
+            oldMapX = mapX
+            mapX = mapX + -dx
+        end
+    end
+
     mapY = mapY + dy
+    oldMapY = mapY
+
+
     -- screenWidth = love.graphics.getWidth()/tileW;
     -- screenHeight = love.graphics.getHeight()/tileH;
     -- print("screen width " .. screenWidth)
@@ -38,18 +94,18 @@ end
 function updateTilesetBatch( xlim, ylim)
     tilesetBatch:clear()
 
-	for y=1, mapH  do
-		for x=1, mapW + xlim do
+    for y=1, mapH  do
+        for x=1, mapW + xlim do
             -- print("xlim is " .. xlim)
             -- print("ylim is " .. ylim)
             -- print("coords: " ..  math.floor(x).. " , " .. math.floor(y))
             tilesetBatch:add(quads[tileTable[x][y]], x * tileW, y * tileH) 
-		end
-	end
+        end
+    end
 
     print("tiles being rendered: " .. tilesetBatch:getCount())
 end
-    
+
 
 function newMap(w, h, tileSetPath, quadInfo, tileString)
 
@@ -60,16 +116,16 @@ function newMap(w, h, tileSetPath, quadInfo, tileString)
     tileset = love.graphics.newImage(tileSetPath)
 
     tileSetw, tileSeth = tileset:getWidth(), tileset:getHeight()
-	width  = #(tileString:match("[^\n]+"))
-	for x = 1, width, 1 do tileTable[x] = {} end
-	local rowi, coli = 1,1
-	for row in tileString:gmatch("[^\n]+") do
-		assert(#row == width, "Map is not aligned: width of row " .. tostring(rowi) .. " should be " .. tostring(width) .. ", but is: " .. tostring(#row))
-		coli = 1
-		for character in row:gmatch(".") do
-			tileTable[coli][rowi] = character
-			coli = coli + 1
-		end
+    width  = #(tileString:match("[^\n]+"))
+    for x = 1, width, 1 do tileTable[x] = {} end
+    local rowi, coli = 1,1
+    for row in tileString:gmatch("[^\n]+") do
+        assert(#row == width, "Map is not aligned: width of row " .. tostring(rowi) .. " should be " .. tostring(width) .. ", but is: " .. tostring(#row))
+        coli = 1
+        for character in row:gmatch(".") do
+            tileTable[coli][rowi] = character
+            coli = coli + 1
+        end
         rowi = rowi +1
     end
 
@@ -77,13 +133,15 @@ function newMap(w, h, tileSetPath, quadInfo, tileString)
     mapW = coli-1
 
     quads = {}
-	for _, info in ipairs (quadInfo) do 
-    	quads[info[1]] = love.graphics.newQuad(info[2], info[3], tileW, tileH, tileSetw, tileSeth )
-	end
+    for _, info in ipairs (quadInfo) do 
+        quads[info[1]] = love.graphics.newQuad(info[2], info[3], tileW, tileH, tileSetw, tileSeth )
+    end
 
-  tilesetBatch = love.graphics.newSpriteBatch(tileset, tileSetw * tileSeth)
+    tilesetBatch = love.graphics.newSpriteBatch(tileset, tileSetw * tileSeth)
+
+    handler = tilecollider(getTile, tileW, tileH, isResolvable) 
 end
 
 function drawMap()
-  love.graphics.draw(tilesetBatch,  math.floor(-(mapX)*tileW), math.floor(-(mapY)*tileW))
+    love.graphics.draw(tilesetBatch,  math.floor(-(mapX)*tileW), math.floor(-(mapY)*tileW))
 end

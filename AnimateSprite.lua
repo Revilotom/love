@@ -1,4 +1,4 @@
-local managerVersion = 1.0 
+local ManagerVersion = 1.0 
 
 spriteBank = {}
 imageBank = {}
@@ -21,7 +21,7 @@ function LoadSprite(spriteDef)
     spriteBank [spriteDef] = defFile()
     
     if spriteBank[spriteDef].serialization_version ~= ManagerVersion then
-        print("attempt to load file with incompatible versions" .. spiteDef)
+        print("attempt to load file with incompatible versions" .. spriteDef)
         print("Expected version" .. ManagerVersion .. " got version " .. spriteBank[spriteDef].serialization_version .. " .")
         spriteBank[spriteDef] = oldSprite
 
@@ -29,7 +29,7 @@ function LoadSprite(spriteDef)
 
     end
 
-    local spriteSheet = spritebank[spriteDef].spriteSheet
+    local spriteSheet = spriteBank[spriteDef].spriteSheet
 
     local oldImage = imageBank [spriteSheet]
     imageBank[spriteSheet] = love.graphics.newImage(spriteSheet)
@@ -57,7 +57,7 @@ function GetInstance(spriteDef)
 
     return {
         sprite = spriteBank[spriteDef],
-        currentAnimation = spriteBank[spriteDef].animationsNames[1],
+        currentAnimation = spriteBank[spriteDef].animationNames[1],
         currentFrame = 1,
         elapsedTime = 0,
         sizeScale = 1,
@@ -71,9 +71,10 @@ end
 
 
 function UpdateInstance(s, dt)
-    s.elapsedTime = s.elapsedTime +dt
 
-    if s.elapsedTime > s.sprite.frameDuration * spr.timeScale then
+    s.elapsedTime = s.elapsedTime + dt
+
+    if s.elapsedTime > s.sprite.frameDuration * s.timeScale then
         if s.currentFrame < #s.sprite.animations[s.currentAnimation] then
             s.currentFrame = s.currentFrame + 1
         else
@@ -81,6 +82,45 @@ function UpdateInstance(s, dt)
         end
 
         s.elapsedTime = 0
+    end
+end
+
+function SwitchAnimation(s, oldir, newdir)
+   
+    if newdir == 0 then
+        player.currentAnimation = "walkUp"
+    end
+
+    if newdir == 1 then 
+        player.currentAnimation = "walkRight"
+    end
+   
+    if newdir == 2 then
+        player.currentAnimation = "walkDown"
+    end
+
+    if newdir == 3 then
+        player.currentAnimation = "walkLeft"
+    end
+
+    if newdir == -1 then
+        if oldir == 0 then 
+            player.currentAnimation = "idleUp"
+        end
+
+        if oldir == 1 then
+            player.currentAnimation = "idleRight"
+        end
+
+        if oldir == 2 then
+            player.currentAnimation = "idleDown"
+        end
+
+        if oldir == 3 then 
+            player.currentAnimation = "idleLeft"
+
+        end
+        player.currentFrame = 1
     end
 end
 
