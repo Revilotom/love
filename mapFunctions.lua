@@ -4,7 +4,6 @@ tileH = 0
 tileW = 0
 
 
-
 local tileTable, tileset, quads, tileSetw, tileSeth, tilesetBatch, mapW, mapH
 local mapX = 0
 local mapY = 0
@@ -17,25 +16,31 @@ function isResolvable(side, tile, x, y)
 
 
 
-    print("checking for collision at", x, y, tile)
+    -- print("checking for collision at", x, y, tile)
 
 
     if tile == '#' then
-        if side == "right" then
-                return true
-        end
-        if side == "left" then
-            if playerX - x < 2 then
-                return true
+        if y == playerY then
+            if side == "right" then
+                    print("!!!!", x, y)
+                    return true
+                end
+            end
+
+
+            if side == "left" then
+                if x <= playerX then
+                    print("adasdas")
+                    return true
+                end
             end
         end
-    end
 end
-
 function getTile(x, y)
 
     if x > mapW or y > mapH or y <=0 or x <= 0 then
-        print ("out of bounds", x, y)
+        -- print ("out of bounds", x, y)
+        return nil
     else
         return tileTable[x][y]
     end
@@ -45,29 +50,38 @@ function loadMap(path)
     love.filesystem.load(path)()
 end
 
+function carryOn(dx, dy)
+
+
+    mapX = mapX + dx
+    mapY = mapY + dy
+end 
 function moveMap(dx, dy)
 
 
-    print("player at", playerX, playerY)
     playerX = math.ceil(midX/tileW + mapX)
     playerY = math.ceil(midY/tileW +  mapY)
-    newx = handler:rightResolve(playerX*tileW, playerY*tileH, 70, 105)
-
-    if newx ~= playerX then
-
-        newx = handler:leftResolve(playerX*tileW, playerY*tileH, 70, 105)
-
-        if newx ~= playerX then
+    newX = math.ceil(handler:rightResolve(playerX*tileW, playerY*tileH, 70, 105)/tileW)
 
 
+    print("newX", newX, "playerX", playerX)
 
-            oldMapX = mapX
-            mapX = mapX + -dx
-        end
+    olddX = dx
+
+    if newX ~= playerX then
+        if dx < 0 then dx = 0 end
     end
 
-    mapY = mapY + dy
-    oldMapY = mapY
+    newX = math.ceil(handler:leftResolve(playerX*tileW, playerY*tileH, 70, 105)/tileW)
+
+    if newX ~= playerX then
+        if dx > 0 then dx = 0 else dx = olddX end
+    end
+
+    carryOn(dx, dy) 
+
+
+
 
 
     -- screenWidth = love.graphics.getWidth()/tileW;

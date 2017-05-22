@@ -8,11 +8,11 @@ function getInput(dt)
     return 2 
   end
   if love.keyboard.isDown("left")  then
-    moveMap(0.2 * tileW * dt, 0)
+    moveMap(-0.2 * tileW * dt, 0)
     return 3
   end
   if love.keyboard.isDown("right")  then
-    moveMap(-0.2 * tileW * dt, 0)
+    moveMap(0.2 * tileW * dt, 0)
     return 1 
   end
   return -1

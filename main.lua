@@ -2,7 +2,8 @@ require "mapFunctions"
 require "input"
 require "AnimateSprite"
 
-midX = love.graphics.getWidth()/2 +160
+-- midX = love.graphics.getWidth()/2 +160
+midX = love.graphics.getWidth()/2 
 midY = love.graphics.getHeight()/2 - 20
 local fullscreen = false
 player = nil
